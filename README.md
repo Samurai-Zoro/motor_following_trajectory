@@ -3,69 +3,113 @@
 Arduino/STM32 motor control project for the STM32 Nucleo-F401RE.
 
 ## Project Purpose
-This code is designed for a **two-motor trajectory-following system** used for **input shaping** at a chosen shaping frequency.
+This repository contains:
 
-The two motors have different motion roles:
-- **One motor performs rotational motion**
-- **One motor performs linear motion**
+- **STM32 firmware** for a **2-motor trajectory-following system**
+- **Python code** for reading streamed telemetry data and saving it to CSV
 
-Both motors are commanded to follow a predefined path/trajectory.  
-The trajectory is shaped for a specific frequency so that vibration, oscillation, and residual motion can be reduced during operation.
+The system is designed for **input-shaped trajectory tracking** at a chosen shaping frequency to reduce vibration and residual oscillation.
 
-## System Behavior
-- 2-motor coordinated path following
-- One **rotational axis**
-- One **linear axis**
-- Trajectory tracking with **input-shaped commands**
-- Shaping tuned to a selected frequency
-- Can also be used in **single-motor mode**
+## System Overview
+This is a **two-motor path-following system**:
 
-## Single-Motor Use
-If only one motor is needed, the unused motor can be disabled by setting its corresponding values in the header file to **zero**.
+- **Motor A**: linear motion
+- **Motor B**: rotational motion
 
-For example, if one axis is not required, you can simply zero the associated trajectory/header values so the code effectively runs only the motor you want to use.
+Both motors follow a predefined trajectory/path.
 
-## Features
-- Two-motor path following
-- Coordinated rotational and linear motion
-- Input-shaped motion commands
-- Frequency-based trajectory shaping
-- Motor control with PWM
+The trajectory is shaped for a selected frequency so the motion is smoother and unwanted vibration is reduced.
+
+If only one motor is needed, the unused axis can be disabled by setting the corresponding values in the header file to **zero**.
+
+## Firmware Features
+- Two-motor trajectory following
+- Linear + rotational coordinated motion
+- Input-shaped reference trajectory
+- Frequency-based motion shaping
+- PID-based tracking control
+- PWM motor control
+- Encoder feedback
+- Limit switch support
+- Piezo sensor reading
 - ADC current sensing using ACS712
 - ADC voltage sensing using resistor divider
-- Limit switch support
-- Encoder feedback
-- PID-based position control
-- Streaming telemetry in binary or CSV format
+- Binary or CSV telemetry streaming over serial
+
+## Python Code
+This repository also includes a Python script for reading the telemetry stream sent by the STM32 firmware and saving it as CSV.
+
+The Python script:
+
+- opens the serial port
+- reads the firmware binary stream
+- detects and validates frames
+- checks CRC16 for frame integrity
+- converts raw values into engineering units
+- writes the data into a CSV file
+- prints capture statistics such as average and instantaneous frame rate
+
+This is useful for logging experiments and analyzing motor tracking performance.
+
+## Repository Files
+- `motor-control-stm32.ino`
+- `target_positions.h`
+- `quantized_rotation_deg.h`
+- `Reader_2.py`
+- `README.md`
+
+## Required Firmware Files
+- `motor-control-stm32.ino`
+- `target_positions.h`
+- `quantized_rotation_deg.h`
 
 ## Hardware
 - STM32 Nucleo-F401RE
-- 2 motors:
-  - 1 rotational motor
-  - 1 linear motor
+- 2 motors
+  - 1 linear axis
+  - 1 rotational axis
 - ACS712 current sensor
-- Motor driver
+- Voltage divider for motor voltage sensing
 - Limit switch
 - Encoders
 - Piezo sensor
+- Motor driver
 
 ## Pin Summary
-- Current sense: A2
-- Voltage sense: A4
-- Piezo: A3
-- Limit switch: D13
+- Current sense: `A2`
+- Voltage sense: `A4`
+- Piezo: `A3`
+- Limit switch: `D13`
 
-## Required files
-- motor-control-stm32.ino
-- target_positions.h
-- quantized_rotation_deg.h
+## Firmware Notes
+This firmware uses the Arduino framework on STM32 and depends on board-specific timer support such as `HardwareTimer.h`.
 
-## Notes
-This project uses the Arduino framework for STM32 and depends on board-specific timer support such as `HardwareTimer.h`.
+The control system tracks a predefined trajectory using two axes:
+- one linear
+- one rotational
 
-The motion profile is intended for trajectory tracking under an input-shaping scheme tuned to a specific frequency to help suppress resonance and reduce vibration.
+The target trajectory is intended for **input shaping** at a specified frequency to reduce resonance and vibration.
 
-If only one motor axis is required, the second axis can be disabled by setting the corresponding header trajectory values to zero.
+If only one axis is required, the other axis can be disabled by setting its corresponding trajectory/header values to zero.
 
-## License
-Add your preferred license here.
+## Telemetry Streaming
+The firmware can stream telemetry data over serial.
+
+The telemetry includes values such as:
+- time
+- actual and target positions
+- PWM commands
+- piezo response
+- measured current
+- measured voltage
+
+This data can be read directly by the included Python script.
+
+## Python Requirements
+- Python 3
+- `pyserial`
+
+Install dependency with:
+
+```bash
+pip install pyserial
